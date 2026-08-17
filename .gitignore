@@ -1,0 +1,36 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+build/
+dist/
+
+# Virtual environments
+.venv/
+venv/
+
+# uv
+# (lockfile is committed; nothing to ignore beyond .venv)
+
+# Tooling caches
+.mypy_cache/
+.ruff_cache/
+.pytest_cache/
+
+# Jupyter
+.ipynb_checkpoints/
+
+# ML artifacts
+*.ckpt
+*.pt
+*.pth
+*.safetensors
+checkpoints/
+data/
+wandb/
+runs/
+
+# OS / editor
+.DS_Store
+.idea/
+.vscode/
