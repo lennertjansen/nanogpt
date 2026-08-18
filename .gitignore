@@ -21,6 +21,7 @@ venv/
 .ipynb_checkpoints/
 
 # ML artifacts
+input.txt
 *.ckpt
 *.pt
 *.pth
