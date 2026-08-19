@@ -59,7 +59,7 @@ def get_batch(split):
     x, y = x.to(device), y.to(device)
     return x, y
 
-@torch.no_grad()
+@torch.no_grad() # this tells pytorch that for everything that happens in the function below, we will not be calling .backward(), meaning that PyTorch can be a lot more efficient with its memory usage
 def estimate_loss():
     """estimate train and val loss by averaging over many batches"""
     out = {}
