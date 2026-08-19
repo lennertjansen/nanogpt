@@ -61,7 +61,7 @@ def get_batch(split):
 
 @torch.no_grad()
 def estimate_loss():
-    """Flush old losses and estimate means on splits"""
+    """estimate train and val loss by averaging over many batches"""
     out = {}
     model.eval()
     
