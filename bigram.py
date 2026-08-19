@@ -147,5 +147,5 @@ for iter in range(max_iters):
     
 
 # generate from the model
-context = idx=torch.zeros((1, 1), dtype=torch.long)
+context = idx=torch.zeros((1, 1), dtype=torch.long, device=device)
 print(decode(m.generate(context, max_new_tokens=500)[0].tolist()))
