@@ -56,6 +56,7 @@ def get_batch(split):
     ix = torch.randint(len(data) - context_length, (batch_size, )) # random sample of batch_size indices from the data (offset by the max context length)
     x = torch.stack([data[i:i+context_length] for i in ix])
     y = torch.stack([data[i+1:i+context_length+1] for i in ix])
+    x, y = x.to(device), y.to(device)
     return x, y
 
 @torch.no_grad()
@@ -120,7 +121,7 @@ class BigramLanguageModel(nn.Module):
         return idx
 
 model = BigramLanguageModel(vocab_size)
-m = model.to(device)
+m = model.to(device) # move model params to device
 
 # --------
 
