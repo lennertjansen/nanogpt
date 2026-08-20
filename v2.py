@@ -81,7 +81,7 @@ class Head(nn.Module):
     """One head of self-attention."""
 
     def __init__(self, head_size):
-        super.__init__()
+        super().__init__()
         self.key = nn.Linear(n_embd, head_size, bias=False) # (C, H)
         self.query = nn.Linear(n_embd, head_size, bias=False)
         self.value = nn.Linear(n_embd, head_size, bias=False)
