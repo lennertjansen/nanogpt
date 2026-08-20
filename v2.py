@@ -76,6 +76,36 @@ def estimate_loss():
     model.train()
     return out
 
+
+class Head(nn.Module):
+    """One head of self-attention."""
+
+    def __init__(self, head_size):
+        super.__init__()
+        self.key = nn.Linear(n_embd, head_size, bias=False) # (C, H)
+        self.query = nn.Linear(n_embd, head_size, bias=False)
+        self.value = nn.Linear(n_embd, head_size, bias=False)
+        self.register_buffer('tril', torch.tril(torch.ones(context_length, context_length)))
+
+    def forward(self, x):
+        B, T, C = x.shape
+        q = self.query(x) # (B, T, H)
+        k = self.key(x) # (B, T, H)
+        _, _, H = q.shape
+
+        # Compute attention scores / logits (affinities)
+        wei = q @ k.transpose(-2, -1) * H**-0.5 # (B, T, H) @ (B, T, H).transpose(-2, -1) = (B, T, H) @ (B, H, T) --> (B, T, T)
+        wei = wei.masked_fill(self.tril[:T, :T] == 0, float('-inf')) # (B, T, T)
+        wei = F.softmax(wei, dim=-1)
+
+        # perform weighted aggregation of the values
+        v = self.value(x) # (B, T, H)
+        out = wei @ v # (B, T, T) @ (B, T, H) --> (B, T, H)
+        return out
+
+
+
+
 # -------- Simple Bigram Model --------
 class BigramLanguageModel(nn.Module):
 
