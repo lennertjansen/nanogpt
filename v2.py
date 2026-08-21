@@ -82,7 +82,7 @@ class Head(nn.Module):
 
     def __init__(self, head_size):
         super().__init__()
-        self.key = nn.Linear(n_embd, head_size, bias=False) # (C, H)
+        self.key = nn.Linear(n_embd, head_size, bias=False) # (H, C)
         self.query = nn.Linear(n_embd, head_size, bias=False)
         self.value = nn.Linear(n_embd, head_size, bias=False)
         self.register_buffer('tril', torch.tril(torch.ones(context_length, context_length)))
