@@ -1,7 +1,7 @@
 # NanoGPT
-A miniature version of OpenAI's GPT-2 (11M) for my own educational purposes.
-
 **Disclaimer: this repo is strictly for my own educational/didactic purposes.**
+
+A miniature version of OpenAI's GPT-2 (11M) for my own educational purposes.
 
 Character-level GPT trained on tinyshakespeare, following Karpathy's "Let's build GPT" lecture and Vaswani et al. (2017).
 
