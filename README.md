@@ -3,7 +3,9 @@ A miniature version of OpenAI's GPT-2 (11M) for my own educational purposes.
 
 **Disclaimer: this repo is strictly for my own educational/didactic purposes.**
 
-Character-level GPT trained on tinyshakespeare, following Karpathy's "Let's build GPT" lecture. Decoder-only transformer: multi-head causal self-attention, pre-norm, learned positional embeddings.
+Character-level GPT trained on tinyshakespeare, following Karpathy's "Let's build GPT" lecture and Vaswani et al. (2017).
+
+The final model is a decoder-only transformer with multi-head causal self-attention, pre-norm, learned positional embeddings.
 
 ## Model
 
