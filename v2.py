@@ -8,9 +8,9 @@ from torch.nn import functional as F
 # -------- Hyperparameters --------
 batch_size = 32 # number of independent sequences we will process in parallel
 context_length = 8 # maximum context length for predictions
-max_iters = 3000 # maximum iterations
+max_iters = 5000 # maximum iterations
 eval_interval = 300
-learning_rate = 1e-2
+learning_rate = 1e-3
 eval_iters = 200
 n_embd = 32
 
@@ -114,6 +114,7 @@ class BigramLanguageModel(nn.Module):
         # each token directly reads the logits for the next token from a lookup table
         self.token_embedding_table = nn.Embedding(vocab_size, n_embd) 
         self.position_embedding_table = nn.Embedding(context_length, n_embd)
+        self.sa_head = Head(n_embd) # self-attention head
         self.lm_head = nn.Linear(n_embd, vocab_size)
 
     def forward(self, idx, targets=None):
@@ -123,7 +124,8 @@ class BigramLanguageModel(nn.Module):
         tok_emb = self.token_embedding_table(idx) # shape (B, T, C) (note that C == n_embd in this case)
         pos_emb = self.position_embedding_table(torch.arange(T, device=device)) # (T, C)
         x = tok_emb + pos_emb # (B, T, C) (due to broadcasting)
-        logits = self.lm_head(tok_emb) # (B, T, vocab_size)
+        x = self.sa_head(x) # apply one head of self-attention (B, T, C)
+        logits = self.lm_head(x) # (B, T, vocab_size)
 
         if targets is None:
             loss = None
@@ -141,8 +143,11 @@ class BigramLanguageModel(nn.Module):
         
         # idx is (B, T) array of indices in the current context
         for _ in range(max_new_tokens):
+            # crop idx to the last context_length tokens
+            idx_cond = idx[:, -context_length:]
+            
             # get the predictions
-            logits, loss = self(idx)
+            logits, loss = self(idx_cond)
             
             # focus only on the last time step
             logits = logits[:, -1, :] # becomes (B, C)
