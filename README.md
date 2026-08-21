@@ -33,4 +33,4 @@ Prints losses every 500 steps, then generates a 500-char sample.
 
 ## AI statement
 
-No AI was used to write the code. Claude Code (Fable 5) drafted and edited this README. Cursor (GPT-5.6 (sol, medium)) added finishing touches to handwritten notes and comments in the notebooks.
+No AI was used to write the code. Claude Code (Fable 5) drafted and edited this README. Cursor (GPT-5.6 (sol, medium)) reviewed and added finishing touches to handwritten notes and comments in the notebooks.
