@@ -1,7 +1,3 @@
-# Code ported over from gpt-dev.ipynb, that's why it's so ugly
-
-from turtle import forward
-from webbrowser import get
 import torch
 import torch.nn as nn
 from torch.nn import functional as F
@@ -149,6 +145,7 @@ class Block(nn.Module):
     def forward(self, x):
         x = x + self.sa(x) # the "x + ..." gives us residual connections
         x = x + self.ffwd(x)
+        return x
 
 
 # -------- Simple Bigram Model --------
