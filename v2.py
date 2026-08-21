@@ -124,9 +124,9 @@ class FeedForward(nn.Module):
     def __init__(self, n_embd):
         super().__init__()
         self.net = nn.Sequential(
-            nn.Linear(n_embd, n_embd),
+            nn.Linear(n_embd, 4 * n_embd), # original Transformer FFN uses d_ff = 4 * d_model (2048 vs. 512); Vaswani et al. (2017), Section 3.3
             nn.ReLU(),
-            nn.Linear(n_embd, n_embd), # the projection layer back into the residual pathway
+            nn.Linear(4 * n_embd, n_embd), # the projection layer back into the residual pathway
         )
     
     def forward(self, x):
