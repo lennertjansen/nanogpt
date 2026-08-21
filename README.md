@@ -1,2 +1,2 @@
-# nanogpt
-Reproduction of GPT-2 (124M)
+# NanoGPT
+A miniature version of OpenAI's GPT-2 for my own educational purposes.
