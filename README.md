@@ -1,6 +1,8 @@
 # NanoGPT
 A miniature version of OpenAI's GPT-2 (11M) for my own educational purposes.
 
+**Disclaimer: this repo is strictly for my own educational/didactic purposes.**
+
 Character-level GPT trained on tinyshakespeare, following Karpathy's "Let's build GPT" lecture. Decoder-only transformer: multi-head causal self-attention, pre-norm, learned positional embeddings.
 
 ## Model
@@ -28,3 +30,7 @@ uv run train.py
 ```
 
 Prints losses every 500 steps, then generates a 500-char sample.
+
+## AI statement
+
+No AI was used to write the code. Claude Code (Fable 5) made formatting edits to this README. GPT-5.6 (sol, medium) added finishing touches to handwritten notes and comments in the notebooks.
