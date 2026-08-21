@@ -3,13 +3,17 @@ import torch.nn as nn
 from torch.nn import functional as F
 
 # -------- Hyperparameters --------
-batch_size = 32 # number of independent sequences we will process in parallel
-context_length = 8 # maximum context length for predictions
+batch_size = 64 # number of independent sequences we will process in parallel
+context_length = 256 # maximum context length for predictions
 max_iters = 5000 # maximum iterations
-eval_interval = 300
-learning_rate = 1e-3
+eval_interval = 500
+learning_rate = 3e-4
 eval_iters = 200
-n_embd = 32
+n_embd = 384
+n_head = 6 # NB: every head will be (n_embd // n_head) dimensional
+n_layer = 6
+dropout = 0.2
+# --------
 
 if torch.cuda.is_available():
     device = "cuda"
@@ -17,6 +21,7 @@ elif torch.backends.mps.is_available():
     device = "mps" # for my apple silicon people
 else:
     device = "cpu"
+print(f"Device: {device}")
 # --------
 
 
@@ -83,6 +88,7 @@ class Head(nn.Module):
         self.query = nn.Linear(n_embd, head_size, bias=False)
         self.value = nn.Linear(n_embd, head_size, bias=False)
         self.register_buffer('tril', torch.tril(torch.ones(context_length, context_length)))
+        self.dropout = nn.Dropout(dropout)
 
     def forward(self, x):
         B, T, C = x.shape
@@ -94,6 +100,7 @@ class Head(nn.Module):
         wei = q @ k.transpose(-2, -1) * H**-0.5 # (B, T, H) @ (B, T, H).transpose(-2, -1) = (B, T, H) @ (B, H, T) --> (B, T, T)
         wei = wei.masked_fill(self.tril[:T, :T] == 0, float('-inf')) # (B, T, T)
         wei = F.softmax(wei, dim=-1)
+        wei = self.dropout(wei)
 
         # perform weighted aggregation of the values
         v = self.value(x) # (B, T, H)
@@ -107,6 +114,7 @@ class MultiHeadAttention(nn.Module):
         super().__init__()
         self.heads = nn.ModuleList([Head(head_size) for _ in range(num_heads)])
         self.proj = nn.Linear(n_embd, n_embd)
+        self.dropout = nn.Dropout(dropout)
 
     def forward(self, x):
         out = torch.cat([head(x) for head in self.heads], dim=-1)
@@ -123,6 +131,7 @@ class FeedForward(nn.Module):
             nn.Linear(n_embd, 4 * n_embd), # original Transformer FFN uses d_ff = 4 * d_model (2048 vs. 512); Vaswani et al. (2017), Section 3.3
             nn.ReLU(),
             nn.Linear(4 * n_embd, n_embd), # the projection layer back into the residual pathway
+            nn.Dropout(dropout),
         )
     
     def forward(self, x):
@@ -158,12 +167,8 @@ class BigramLanguageModel(nn.Module):
         # each token directly reads the logits for the next token from a lookup table
         self.token_embedding_table = nn.Embedding(vocab_size, n_embd) 
         self.position_embedding_table = nn.Embedding(context_length, n_embd)
-        self.blocks = nn.Sequential(
-            Block(n_embd, n_head=4),
-            Block(n_embd, n_head=4),
-            Block(n_embd, n_head=4),
-            nn.LayerNorm(n_embd),
-        )
+        self.blocks = nn.Sequential(*[Block(n_embd, n_head=n_head) for _ in range(n_layer)])
+        self.ln_f = nn.LayerNorm(n_embd) # final layernorm
         self.lm_head = nn.Linear(n_embd, vocab_size)
 
     def forward(self, idx, targets=None):
@@ -174,6 +179,7 @@ class BigramLanguageModel(nn.Module):
         pos_emb = self.position_embedding_table(torch.arange(T, device=device)) # (T, C)
         x = tok_emb + pos_emb # (B, T, C) (due to broadcasting)
         x = self.blocks(x) # (B, T, C)
+        x = self.ln_f(x) # (B, T, C)
         logits = self.lm_head(x) # (B, T, vocab_size)
 
         if targets is None:
