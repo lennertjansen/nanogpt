@@ -103,7 +103,29 @@ class Head(nn.Module):
         out = wei @ v # (B, T, T) @ (B, T, H) --> (B, T, H)
         return out
 
+class MultiHeadAttention(nn.Module):
+    """Multiple heads of self-attention in parallel."""
 
+    def __init__(self, num_heads, head_size):
+        super().__init__()
+        self.heads = nn.ModuleList([Head(head_size) for _ in range(num_heads)])
+
+    def forward(self, x):
+        return torch.cat([head(x) for head in self.heads], dim=-1)
+        
+
+class FeedForward(nn.Module):
+    """Simple feed forward linear layer followed by a non-linearity"""
+
+    def __init__(self, n_embd):
+        super().__init__()
+        self.net = nn.Sequential(
+            nn.Linear(n_embd, n_embd),
+            nn.ReLU(),
+        )
+    
+    def forward(self, x):
+        return self.net(x)
 
 
 # -------- Simple Bigram Model --------
@@ -114,7 +136,8 @@ class BigramLanguageModel(nn.Module):
         # each token directly reads the logits for the next token from a lookup table
         self.token_embedding_table = nn.Embedding(vocab_size, n_embd) 
         self.position_embedding_table = nn.Embedding(context_length, n_embd)
-        self.sa_head = Head(n_embd) # self-attention head
+        self.sa_heads = MultiHeadAttention(4, n_embd//4) # i.e. 4 heads of 8-dimensional self-attention
+        self.ffwd = FeedForward(n_embd)
         self.lm_head = nn.Linear(n_embd, vocab_size)
 
     def forward(self, idx, targets=None):
@@ -124,7 +147,8 @@ class BigramLanguageModel(nn.Module):
         tok_emb = self.token_embedding_table(idx) # shape (B, T, C) (note that C == n_embd in this case)
         pos_emb = self.position_embedding_table(torch.arange(T, device=device)) # (T, C)
         x = tok_emb + pos_emb # (B, T, C) (due to broadcasting)
-        x = self.sa_head(x) # apply one head of self-attention (B, T, C)
+        x = self.sa_heads(x) # apply one head of self-attention (B, T, C)
+        x = self.ffwd(x) # (B, T, C)
         logits = self.lm_head(x) # (B, T, vocab_size)
 
         if targets is None:
